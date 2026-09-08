@@ -87,49 +87,58 @@ with col_chart2:
 
 st.markdown("---")
 
-# --- ВЕРТИКАЛЬНЫЙ БАР-ЧАРТ ---
+# --- ЛИНЕЙНЫЙ ГРАФИК ДИНАМИКИ ---
 st.subheader("Динамика показателей во времени")
-# Собираем только числовые колонки для выбора по оси Y
+
 numeric_cols = filtered_df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-# Исключаем системные
 numeric_cols = [c for c in numeric_cols if c not in ['Баллы']] 
 
 y_axis_col = st.selectbox("Выберите метрику для оси Y:", numeric_cols)
 
 if not filtered_df.empty and y_axis_col:
-    # Приводим к формату даты (если еще не приведено) и достаем Год-Месяц
+    # Приводим к дате и месяцу
     filtered_df['Дата'] = pd.to_datetime(filtered_df['Дата'])
     filtered_df['Месяц'] = filtered_df['Дата'].dt.strftime('%Y-%m')
     
-    # Группируем по месяцам
+    # Группируем и обязательно сортируем по времени
     time_data = filtered_df.groupby('Месяц')[y_axis_col].mean().reset_index()
+    time_data = time_data.sort_values('Месяц')
     
-    fig_time = px.bar(time_data, x='Месяц', y=y_axis_col, title=f"Динамика: {y_axis_col[:50]}...",
-                      text_auto='.2f')
-    fig_time.update_xaxes(type='category') # Чтобы столбцы не слипались при пропусках
+    # Строим линейный график с маркерами и подписями значений
+    fig_time = px.line(
+        time_data, 
+        x='Месяц', 
+        y=y_axis_col, 
+        markers=True,
+        title=f"Динамика: {y_axis_col[:50]}...",
+        text=time_data[y_axis_col].apply(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+    )
+    
+    fig_time.update_traces(textposition="top center")
+    fig_time.update_xaxes(type='category')
     st.plotly_chart(fig_time, use_container_width=True)
 
 st.markdown("---")
 
-# --- ИНТЕРАКТИВНАЯ ЧИТАЛКА (СЛАЙДЕР) ---
+# --- ОТКРЫТАЯ ОБРАТНАЯ СВЯЗЬ (ТАБЛИЦА) ---
 st.subheader("Открытая обратная связь (Вопросы 16 и 18)")
 q16_col = [c for c in df.columns if c.startswith('16.')][0]
 q18_col = [c for c in df.columns if c.startswith('18.')][0]
 
-# Оставляем только те ответы, где есть хоть какой-то текст
 feedback_df = filtered_df.dropna(subset=[q16_col, q18_col], how='all').reset_index(drop=True)
 
 if not feedback_df.empty:
-    slider_val = st.slider("Листать ответы:", 1, len(feedback_df), 1)
-    current_idx = slider_val - 1
+    st.caption(f"Всего ответов: {len(feedback_df)}")
     
-    st.info(f"**Сотрудник ({feedback_df.loc[current_idx, dept_col]}, {feedback_df.loc[current_idx, tenure_col]})**")
+    # Оставляем только нужные колонки и переименовываем для читаемости
+    display_df = feedback_df[[dept_col, tenure_col, q16_col, q18_col]].rename(columns={
+        dept_col: "Отдел",
+        tenure_col: "Стаж",
+        q16_col: "Что изменить (Q16)",
+        q18_col: "Что мешает (Q18)"
+    })
     
-    st.write("**Что бы изменил (Q16):**")
-    st.success(feedback_df.loc[current_idx, q16_col])
-    
-    st.write("**Что мешает прямо сейчас (Q18):**")
-    st.warning(feedback_df.loc[current_idx, q18_col])
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
 else:
     st.write("Нет текстовых ответов по выбранным фильтрам.")
 
