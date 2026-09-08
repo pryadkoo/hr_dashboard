@@ -4,20 +4,18 @@ import plotly.express as px
 import numpy as np
 
 # Настройка страницы
-st.set_page_config(page_title="HR Panel", layout="wide")
+st.set_page_config(page_title="💻 HR Panel", layout="wide")
 
-@st.cache_data(ttl=600) # Кэшируем на 10 минут, чтобы гугл не блокнул нас за частые запросы
+@st.cache_data(ttl=10800) # Кэшируем на 3ч.
 def load_data():
     sheet_id = "1Ng7P1ZU3ObeE3XSVjWGGGjMfJOD5rAvQor4mfWbuWbM"
     
-    # ВАЖНО: Впиши сюда точные названия листов (вкладок внизу) из твоего гугл-дока
-    sheet_name_union = "master_hr_table_union" 
-    sheet_name_metrics = "master_hr_table_metrics" 
+    sheet_name_union = "union" 
+    sheet_name_metrics = "metrics" 
     
     url_union = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_union}"
     url_metrics = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_metrics}"
     
-    # Читаем напрямую из интернета
     df = pd.read_csv(url_union)
     metrics_df = pd.read_csv(url_metrics)
     
@@ -29,8 +27,9 @@ def load_data():
     df['Дата'] = df[date_col].dt.date
     
     return df, metrics_df, dept_col, tenure_col
+df, metrics_df, dept_col, tenure_col = load_data()
 
-# --- 1 & 2. НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
+# --- НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
 st.title("HR Panel")
 st.markdown("---")
 
@@ -49,7 +48,7 @@ if selected_tenures:
 
 st.markdown("---")
 
-# --- 3. KPI КАРТОЧКИ ---
+# --- KPI КАРТОЧКИ ---
 # Ищем колонки под метрики динамически, опираясь на справочник (номера 3 и 17)
 esi_col = [c for c in df.columns if c.startswith('3.')][0]
 enps_col = [c for c in df.columns if c.startswith('17.')][0]
@@ -66,7 +65,7 @@ with kpi_cols[2]:
 
 st.markdown("---")
 
-# --- 4. ДВА БАР-ЧАРТА (ГОРИЗОНТАЛЬНЫЕ) ---
+# --- ДВА БАР-ЧАРТА (ГОРИЗОНТАЛЬНЫЕ) ---
 st.subheader("Разрез метрик ESI и eNPS")
 group_by_option = st.radio("Сгруппировать графики по:", ["Отдел", "Стаж работы"], horizontal=True)
 group_col = dept_col if group_by_option == "Отдел" else tenure_col
@@ -88,7 +87,7 @@ with col_chart2:
 
 st.markdown("---")
 
-# --- 5. ВЕРТИКАЛЬНЫЙ БАР-ЧАРТ (ДИНАМИКА) ---
+# --- ВЕРТИКАЛЬНЫЙ БАР-ЧАРТ ---
 st.subheader("Динамика показателей во времени")
 # Собираем только числовые колонки для выбора по оси Y
 numeric_cols = filtered_df.select_dtypes(include=['int64', 'float64']).columns.tolist()
@@ -107,7 +106,7 @@ if not filtered_df.empty and y_axis_col:
 
 st.markdown("---")
 
-# --- 6. ИНТЕРАКТИВНАЯ ЧИТАЛКА (СЛАЙДЕР) ---
+# --- ИНТЕРАКТИВНАЯ ЧИТАЛКА (СЛАЙДЕР) ---
 st.subheader("Открытая обратная связь (Вопросы 16 и 18)")
 q16_col = [c for c in df.columns if c.startswith('16.')][0]
 q18_col = [c for c in df.columns if c.startswith('18.')][0]
@@ -131,7 +130,7 @@ else:
 
 st.markdown("---")
 
-# --- 7. ILLUSTRATION DIAGRAM (ТИПИЧНЫЙ СОТРУДНИК) ---
+# --- ILLUSTRATION DIAGRAM (ТИПИЧНЫЙ СОТРУДНИК) ---
 st.subheader("Портрет типичного сотрудника (на основе фильтров)")
 
 if not filtered_df.empty:
