@@ -6,25 +6,29 @@ import numpy as np
 # Настройка страницы
 st.set_page_config(page_title="HR Panel", layout="wide")
 
-# Функция загрузки данных
-@st.cache_data
+@st.cache_data(ttl=600) # Кэшируем на 10 минут, чтобы гугл не блокнул нас за частые запросы
 def load_data():
-    # Читаем твои готовые файлы
-    df = pd.read_csv("master_hr_table_union.csv")
-    metrics_df = pd.read_csv("master_hr_table_metrics.csv")
+    sheet_id = "1Ng7P1ZU3ObeE3XSVjWGGGjMfJOD5rAvQor4mfWbuWbM"
     
-    # Определяем нужные колонки по их началу
+    # ВАЖНО: Впиши сюда точные названия листов (вкладок внизу) из твоего гугл-дока
+    sheet_name_union = "master_hr_table_union" 
+    sheet_name_metrics = "master_hr_table_metrics" 
+    
+    url_union = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_union}"
+    url_metrics = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_metrics}"
+    
+    # Читаем напрямую из интернета
+    df = pd.read_csv(url_union)
+    metrics_df = pd.read_csv(url_metrics)
+    
     dept_col = [c for c in df.columns if c.startswith('1.')][0]
     tenure_col = [c for c in df.columns if c.startswith('2.')][0]
     date_col = 'Отметка времени'
     
-    # Преобразуем дату для таймлайна
     df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
     df['Дата'] = df[date_col].dt.date
     
     return df, metrics_df, dept_col, tenure_col
-
-df, metrics_df, dept_col, tenure_col = load_data()
 
 # --- 1 & 2. НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
 st.title("HR Panel")
