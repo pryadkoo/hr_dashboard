@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import urllib.parse  # Добавляем этот импорт для работы с ссылками
 
 # Настройка страницы
 st.set_page_config(page_title="👩‍💼 Текучка кадров", layout="wide")
@@ -9,8 +10,9 @@ st.set_page_config(page_title="👩‍💼 Текучка кадров", layout=
 def load_data():
     sheet_id = "1yMi4B18NMKmD53WK2iuWN2FAfLy1VkoG-Kwdbb1N-R0"
     
-    sheet_name_analit = "Аналитика2" 
-    sheet_name_details = "Ушедшие" 
+    # Оборачиваем русские названия в urllib.parse.quote()
+    sheet_name_analit = urllib.parse.quote("Аналитика2") 
+    sheet_name_details = urllib.parse.quote("Ушедшие") 
     
     url_analit = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_analit}"
     url_details = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_details}"
