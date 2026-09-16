@@ -44,6 +44,7 @@ def load_data():
         df_analit = pd.merge(df_analit, df_managers, on="Отдел", how="left")
         
     return df_analit, df_details
+df_analit, df_details = load_data()
 
 st.title("👩‍💼 Текучка кадров (Inflow / Outflow)")
 st.markdown("---")
