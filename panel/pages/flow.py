@@ -6,6 +6,9 @@ import urllib.parse  # Добавляем этот импорт для рабо�
 # Настройка страницы
 st.set_page_config(page_title="👩‍💼 Текучка кадров", layout="wide")
 
+# Кнопка возврата на главную (если нужна)
+st.page_link("panel.py", label="⬅️ Вернуться на главную HR Panel", icon="🔙")
+
 @st.cache_data(ttl=10800) # Кэшируем на 3ч.
 def load_data():
     sheet_id = "1yMi4B18NMKmD53WK2iuWN2FAfLy1VkoG-Kwdbb1N-R0"
@@ -28,10 +31,8 @@ def load_data():
     }
     df_managers = pd.DataFrame(mgr_data)
     
-    # НАСТРОЙКА НАЗВАНИЙ КОЛОНОК (Замени на свои реальные названия из таблицы)
-    # Для Аналитики
+    # НАСТРОЙКА НАЗВАНИЙ КОЛОНОК 
     col_dept_an = "Отдел"
-    # Для деталей (Ушедшие)
     col_dept_det = "Отдел"
     
     # Джойним руководителей
@@ -72,12 +73,16 @@ if selected_mgrs:
     if 'Руководитель' in filtered_details.columns:
         filtered_details = filtered_details[filtered_details['Руководитель'].isin(selected_mgrs)]
 
-# --- КОНСТАНТЫ КОЛОНОК АНАЛИТИКИ (переименуй под себя) ---
-col_month = "Месяц"
+# --- КОНСТАНТЫ КОЛОНОК АНАЛИТИКИ ---
+col_month = "Дата"
 col_inflow = "Принято"
 col_outflow = "Уволено"
-col_hc_start = "Штат на начало"
-col_hc_end = "Штат на конец"
+col_hc_start = "Число на начало"
+col_hc_end = "Число на конец"
+
+# Вычисляем "Число на конец", так как его нет в исходной таблице
+if not filtered_analit.empty and set([col_hc_start, col_inflow, col_outflow]).issubset(filtered_analit.columns):
+    filtered_analit[col_hc_end] = filtered_analit[col_hc_start] + filtered_analit[col_inflow] - filtered_analit[col_outflow]
 
 st.markdown("---")
 
@@ -106,7 +111,7 @@ st.markdown("---")
 st.subheader("Динамика найма и увольнений (Net Flow)")
 
 if not filtered_analit.empty and col_month in filtered_analit.columns:
-    # Группируем по месяцам на случай, если выбрали несколько отделов
+    # Группируем по датам на случай, если выбрали несколько отделов
     chart_data = filtered_analit.groupby(col_month)[[col_inflow, col_outflow, col_hc_start]].sum().reset_index()
     
     fig = go.Figure()
@@ -121,13 +126,13 @@ if not filtered_analit.empty and col_month in filtered_analit.columns:
         textposition='auto'
     ))
     
-    # Уволенные (Отрицательные столбцы) - умножаем на -1 для отображения вниз по оси Y
+    # Уволенные (Отрицательные столбцы) - умножаем на -1 для отображения вниз
     fig.add_trace(go.Bar(
         x=chart_data[col_month], 
         y=-chart_data[col_outflow], 
         name='Уволено', 
         marker_color='#e74c3c',
-        text=chart_data[col_outflow], # Текст оставляем положительным
+        text=chart_data[col_outflow],
         textposition='auto'
     ))
     
@@ -142,9 +147,9 @@ if not filtered_analit.empty and col_month in filtered_analit.columns:
     ))
     
     fig.update_layout(
-        barmode='relative', # Позволяет стакать положительные и отрицательные значения
+        barmode='relative',
         title="Inflow vs Outflow & Headcount",
-        xaxis_title="Месяц",
+        xaxis_title="Период",
         yaxis_title="Количество сотрудников",
         hovermode="x unified"
     )
@@ -160,7 +165,7 @@ st.subheader("Детализация по ушедшим сотрудникам"
 
 # Доп. фильтры специально для таблицы
 col_initiator = "Инициатор"
-col_reason = "Причина увольнения"
+col_reason = "Причины увольнения"
 col_probation = "ИС"
 
 if not filtered_details.empty:
