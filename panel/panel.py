@@ -6,6 +6,9 @@ import numpy as np
 # Настройка страницы
 st.set_page_config(page_title="💻 HR Panel", layout="wide")
 
+# --- КНОПКА ПЕРЕХОДА НА ВТОРОЙ ДАШБОРД ---
+st.link_button("➡️ Перейти к дашборду Текучки кадров", "https://hrdashboard-flow.streamlit.app/")
+
 @st.cache_data(ttl=10800) # Кэшируем на 3ч.
 def load_data():
     sheet_id = "1Ng7P1ZU3ObeE3XSVjWGGGjMfJOD5rAvQor4mfWbuWbM"
@@ -27,6 +30,7 @@ def load_data():
     df['Дата'] = df[date_col].dt.date
     
     return df, metrics_df, dept_col, tenure_col
+
 df, metrics_df, dept_col, tenure_col = load_data()
 
 # --- НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
