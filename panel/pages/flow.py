@@ -21,6 +21,14 @@ def load_data():
     df_analit = pd.read_csv(url_analit)
     df_details = pd.read_csv(url_details)
     
+    # 1. Срезаем случайные пробелы по краям в названиях колонок
+    df_analit.columns = df_analit.columns.str.strip()
+    df_details.columns = df_details.columns.str.strip()
+    
+    # 2. Выкидываем все пустые колонки, которые Гугл называет Unnamed
+    df_analit = df_analit.loc[:, ~df_analit.columns.str.contains('^Unnamed')]
+    df_details = df_details.loc[:, ~df_details.columns.str.contains('^Unnamed')]
+    
     # Создаем датафрейм руководителей
     mgr_data = {
         "Отдел": ["IT.DEV", "IT. QA", "Support Senior", "Support", "Admin", "Marketing", "QC"],
@@ -28,19 +36,14 @@ def load_data():
     }
     df_managers = pd.DataFrame(mgr_data)
     
-    # НАСТРОЙКА НАЗВАНИЙ КОЛОНОК 
-    col_dept_an = "Отдел"
-    col_dept_det = "Отдел"
-    
-    # Джойним руководителей
-    if col_dept_an in df_analit.columns:
-        df_analit = pd.merge(df_analit, df_managers, left_on=col_dept_an, right_on="Отдел", how="left")
-    if col_dept_det in df_details.columns:
-        df_details = pd.merge(df_details, df_managers, left_on=col_dept_det, right_on="Отдел", how="left")
+    # 3. Джойним руководителей ТОЛЬКО к Аналитике (в "Ушедших" они и так уже есть)
+    if "Отдел" in df_analit.columns:
+        # Если в аналитике колонка уже вдруг есть, грохаем её перед джойном, чтобы не было дублей _x и _y
+        if "Руководитель" in df_analit.columns:
+            df_analit = df_analit.drop(columns=["Руководитель"])
+        df_analit = pd.merge(df_analit, df_managers, on="Отдел", how="left")
         
     return df_analit, df_details
-
-df_analit, df_details = load_data()
 
 st.title("👩‍💼 Текучка кадров (Inflow / Outflow)")
 st.markdown("---")
