@@ -87,35 +87,35 @@ with col_chart2:
 
 st.markdown("---")
 
-# --- ЛИНЕЙНЫЙ ГРАФИК ДИНАМИКИ ---
+# --- ГОРИЗОНТАЛЬНЫЙ ГРАФИК ДИНАМИКИ ---
 st.subheader("Динамика показателей во времени")
 
 numeric_cols = filtered_df.select_dtypes(include=['int64', 'float64']).columns.tolist()
 numeric_cols = [c for c in numeric_cols if c not in ['Баллы']] 
 
-y_axis_col = st.selectbox("Выберите метрику для оси Y:", numeric_cols)
+y_axis_col = st.selectbox("Выберите метрику для оси X (значение):", numeric_cols)
 
 if not filtered_df.empty and y_axis_col:
     # Приводим к дате и месяцу
     filtered_df['Дата'] = pd.to_datetime(filtered_df['Дата'])
     filtered_df['Месяц'] = filtered_df['Дата'].dt.strftime('%Y-%m')
     
-    # Группируем и обязательно сортируем по времени
+    # Группируем и сортируем по времени (в обратном порядке, чтобы новые месяцы были сверху графика)
     time_data = filtered_df.groupby('Месяц')[y_axis_col].mean().reset_index()
-    time_data = time_data.sort_values('Месяц')
+    time_data = time_data.sort_values('Месяц', ascending=False) 
     
-    # Строим линейный график с маркерами и подписями значений
-    fig_time = px.line(
+    # Строим столбчатый горизонтальный график
+    fig_time = px.bar(
         time_data, 
-        x='Месяц', 
-        y=y_axis_col, 
-        markers=True,
+        x=y_axis_col, 
+        y='Месяц', 
+        orientation='h',
         title=f"Динамика: {y_axis_col[:50]}...",
-        text=time_data[y_axis_col].apply(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+        text_auto='.2f'
     )
     
-    fig_time.update_traces(textposition="top center")
-    fig_time.update_xaxes(type='category')
+    # Теперь категории (месяца) у нас по оси Y, фиксируем это
+    fig_time.update_yaxes(type='category')
     st.plotly_chart(fig_time, use_container_width=True)
 
 st.markdown("---")
