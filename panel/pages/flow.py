@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import urllib.parse  # Добавляем этот импорт для работы с ссылками
 
-# Настройка страницы
+# Настройка страницы-
 st.set_page_config(page_title="👩‍💼 Текучка кадров", layout="wide")
 
 @st.cache_data(ttl=10800) # Кэшируем на 3ч.
