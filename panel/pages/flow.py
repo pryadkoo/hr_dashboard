@@ -6,9 +6,6 @@ import urllib.parse  # Добавляем этот импорт для рабо�
 # Настройка страницы
 st.set_page_config(page_title="👩‍💼 Текучка кадров", layout="wide")
 
-# Кнопка возврата на главную (если нужна)
-st.page_link("panel.py", label="⬅️ Вернуться на главную HR Panel", icon="🔙")
-
 @st.cache_data(ttl=10800) # Кэшируем на 3ч.
 def load_data():
     sheet_id = "1yMi4B18NMKmD53WK2iuWN2FAfLy1VkoG-Kwdbb1N-R0"
