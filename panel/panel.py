@@ -87,35 +87,34 @@ with col_chart2:
 
 st.markdown("---")
 
-# --- ГОРИЗОНТАЛЬНЫЙ ГРАФИК ДИНАМИКИ ---
+# --- ВЕРТИКАЛЬНЫЙ БАР-ЧАРТ ДИНАМИКИ ---
 st.subheader("Динамика показателей во времени")
 
 numeric_cols = filtered_df.select_dtypes(include=['int64', 'float64']).columns.tolist()
 numeric_cols = [c for c in numeric_cols if c not in ['Баллы']] 
 
-y_axis_col = st.selectbox("Выберите метрику для оси X (значение):", numeric_cols)
+y_axis_col = st.selectbox("Выберите метрику для оси Y:", numeric_cols)
 
 if not filtered_df.empty and y_axis_col:
     # Приводим к дате и месяцу
     filtered_df['Дата'] = pd.to_datetime(filtered_df['Дата'])
     filtered_df['Месяц'] = filtered_df['Дата'].dt.strftime('%Y-%m')
     
-    # Группируем и сортируем по времени (в обратном порядке, чтобы новые месяцы были сверху графика)
+    # Группируем и сортируем по времени (в прямом порядке, слева направо)
     time_data = filtered_df.groupby('Месяц')[y_axis_col].mean().reset_index()
-    time_data = time_data.sort_values('Месяц', ascending=False) 
+    time_data = time_data.sort_values('Месяц')
     
-    # Строим столбчатый горизонтальный график
+    # Строим вертикальный столбчатый график
     fig_time = px.bar(
         time_data, 
-        x=y_axis_col, 
-        y='Месяц', 
-        orientation='h',
+        x='Месяц', 
+        y=y_axis_col, 
         title=f"Динамика: {y_axis_col[:50]}...",
         text_auto='.2f'
     )
     
-    # Теперь категории (месяца) у нас по оси Y, фиксируем это
-    fig_time.update_yaxes(type='category')
+    # Месяцы у нас по оси X, фиксируем это как категории, чтобы не слипались
+    fig_time.update_xaxes(type='category')
     st.plotly_chart(fig_time, use_container_width=True)
 
 st.markdown("---")
