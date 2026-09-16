@@ -107,7 +107,10 @@ st.markdown("---")
 # --- 2) ВИЗУАЛЬНЫЙ ЭЛЕМЕНТ: Inflow + Outflow Chart ---
 st.subheader("Динамика найма и увольнений (Net Flow)")
 
-if not filtered_analit.empty and col_month in filtered_analit.columns:
+# Проверяем, что все нужные колонки реально существуют
+required_cols = [col_month, col_inflow, col_outflow, col_hc_start]
+
+if not filtered_analit.empty and set(required_cols).issubset(filtered_analit.columns):
     # Группируем по датам на случай, если выбрали несколько отделов
     chart_data = filtered_analit.groupby(col_month)[[col_inflow, col_outflow, col_hc_start]].sum().reset_index()
     
@@ -153,7 +156,9 @@ if not filtered_analit.empty and col_month in filtered_analit.columns:
     
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.warning("Нет данных для графика или неверно указаны названия колонок в коде.")
+    st.warning(f"Ошибка данных. Убедись, что на листе Аналитика2 точно есть колонки: {required_cols}")
+    # Выводим реальные колонки, чтобы ты сразу увидел, где опечатка
+    st.write("Сейчас скрипт видит такие колонки:", filtered_analit.columns.tolist())
 
 st.markdown("---")
 
