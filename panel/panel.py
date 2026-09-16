@@ -7,7 +7,7 @@ import numpy as np
 st.set_page_config(page_title="💻 HR Panel", layout="wide")
 
 # Переход на другой дашборд
-st.page_link("pages/flow.py", label="➡️ Перейти к дашборду Текучки кадров", icon="📊")
+st.page_link("panel/pages/flow.py", label="➡️ Перейти к дашборду Текучки кадров", icon="📊")
 
 @st.cache_data(ttl=10800) # Кэшируем на 3ч.
 def load_data():
