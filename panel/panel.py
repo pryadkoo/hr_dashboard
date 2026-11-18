@@ -4,7 +4,7 @@ import plotly.express as px
 import numpy as np
 
 # Настройка страницы
-st.set_page_config(page_title="💻 HR Panel", layout="wide")
+st.set_page_config(page_title="💻 HR PANEL", layout="wide")
 
 # --- КНОПКА ПЕРЕХОДА НА ВТОРОЙ ДАШБОРД ---
 st.link_button("➡️ Перейти к дашборду Текучки кадров", "https://hrdashboard-flow.streamlit.app/")
