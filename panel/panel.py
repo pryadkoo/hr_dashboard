@@ -22,6 +22,10 @@ def load_data():
     df = pd.read_csv(url_union)
     metrics_df = pd.read_csv(url_metrics)
     
+    # 1. Удаляем мусорные Unnamed-колонки и полностью пустые столбцы
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed', na=False)]
+    df = df.dropna(axis=1, how='all')
+    
     dept_col = [c for c in df.columns if c.startswith('1.')][0]
     tenure_col = [c for c in df.columns if c.startswith('2.')][0]
     date_col = 'Отметка времени'
@@ -30,7 +34,6 @@ def load_data():
     df['Дата'] = df[date_col].dt.date
     
     return df, metrics_df, dept_col, tenure_col
-
 df, metrics_df, dept_col, tenure_col = load_data()
 
 # --- НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
@@ -94,8 +97,10 @@ st.markdown("---")
 # --- ВЕРТИКАЛЬНЫЙ БАР-ЧАРТ ДИНАМИКИ ---
 st.subheader("Динамика показателей во времени")
 
-numeric_cols = filtered_df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-numeric_cols = [c for c in numeric_cols if c not in ['Баллы']] 
+numeric_cols = [
+    c for c in filtered_df.select_dtypes(include=['int64', 'float64']).columns 
+    if c[0].isdigit() and '.' in c[:4]
+]
 
 y_axis_col = st.selectbox("Выберите метрику для оси Y:", numeric_cols)
 
