@@ -152,6 +152,35 @@ else:
 
 st.markdown("---")
 
+st.markdown("---")
+
+# --- НЕФОРМАЛЬНЫЕ МЕРОПРИЯТИЯ И КОРПОРАТИВЫ (ВОПРОСЫ 20, 21, 22) ---
+st.subheader("Неформальные мероприятия и корпоративы (Вопросы 20–22)")
+
+q20_cols = [c for c in df.columns if c.startswith('20.')]
+q21_cols = [c for c in df.columns if c.startswith('21.')]
+q22_cols = [c for c in df.columns if c.startswith('22.')]
+
+if q20_cols and q21_cols and q22_cols:
+    q20_col, q21_col, q22_col = q20_cols[0], q21_cols[0], q22_cols[0]
+    
+    events_df = filtered_df.dropna(subset=[q20_col, q21_col, q22_col], how='all').reset_index(drop=True)
+    
+    if not events_df.empty:
+        st.caption(f"Всего ответов: {len(events_df)}")
+        
+        display_events_df = events_df[[dept_col, tenure_col, q20_col, q21_col, q22_col]].rename(columns={
+            dept_col: "Отдел",
+            tenure_col: "Стаж",
+            q20_col: "Участие в мероприятиях (Q20)",
+            q21_col: "Интересные форматы (Q21)",
+            q22_col: "Новогодний корпоратив (Q22)"
+        })
+        
+        st.dataframe(display_events_df, use_container_width=True, hide_index=True)
+    else:
+        st.write("Нет ответов по мероприятиям для выбранных фильтров.")
+        
 # --- ILLUSTRATION DIAGRAM (ТИПИЧНЫЙ СОТРУДНИК) ---
 st.subheader("Портрет типичного сотрудника (на основе фильтров)")
 
