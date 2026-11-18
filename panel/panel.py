@@ -37,7 +37,7 @@ def load_data():
 df, metrics_df, dept_col, tenure_col = load_data()
 
 # --- НАЗВАНИЕ И ФИЛЬТРЫ СВЕРХУ ---
-st.title("HR Panel")
+st.title("HR PANEL")
 st.markdown("---")
 
 col1, col2 = st.columns(2)
